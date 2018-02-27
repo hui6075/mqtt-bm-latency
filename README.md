@@ -1,4 +1,4 @@
-MQTT latency measure tool
+MQTT broker latency measure tool
 =========
 A MQTT test tool to measure the broker's forwarding latency.
 Scenario: each topic has a subscriber and a publisher, the publisher publishes #count messages and the subscriber would measure the broker's forwarding latency by the timestamp inside each message's payload.
@@ -140,3 +140,15 @@ Similarly, in JSON:
         }
 }
 ```
+
+功能：测量MQTT服务器转发时延。
+测试场景：每一个topic都有一个订阅者和一个发布者，订阅者接收到消息时通过时间戳测量消息转发时延。
+此外，测量结果还包括发布成功率、发布带宽、转发成功率等。
+
+安装:
+
+```
+go get github.com/hui6075/mqtt-bm-latency
+```
+
+所有依赖包由 [manul](https://github.com/kovetskiy/manul)构建。
