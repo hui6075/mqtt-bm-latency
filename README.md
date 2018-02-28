@@ -102,34 +102,30 @@ Similarly, in JSON:
 ```
 > mqtt-bm-latency --broker tcp://127.0.0.1:1883 --count 10 --size 100 --clients 10 --subqos 1 --pubqos 2 --format json --quiet
 {
-        "publish runs": [
-                {
-                        "id": 9,
-                        "pub_successes": 10,
-                        "failures": 0,
-                        "run_time": 0.036987145,
-                        "pub_time_min": 0.8713970000000001,
-                        "pub_time_max": 11.59584,
-                        "pub_time_mean": 2.8900005999999996,
-                        "pub_time_std": 3.0913799647375466,
-                        "publish_per_sec": 270.3642035631569
-                },
-				...
-		],
-		"subscribe runs": [
-                {
-                        "id": 9,
-                        "actual_published": 10,
-                        "received": 10,
-                        "fwd_success_ratio": 1,
-                        "fwd_time_min": 10,
-                        "fwd_time_max": 36,
-                        "fwd_time_mean": 20.8,
-                        "fwd_time_std": 9.101892355133874
-                },
-				...
-		],
-		"publish totals": {
+        "publish runs": [{
+                "id": 9,
+                "pub_successes": 10,
+                "failures": 0,
+                "run_time": 0.036987145,
+                "pub_time_min": 0.8713970000000001,
+                "pub_time_max": 11.59584,
+                "pub_time_mean": 2.8900005999999996,
+                "pub_time_std": 3.0913799647375466,
+                "publish_per_sec": 270.3642035631569
+        },			...
+	],
+        "subscribe runs": [{
+                "id": 9,
+                "actual_published": 10,
+                "received": 10,
+                "fwd_success_ratio": 1,
+                "fwd_time_min": 10,
+                "fwd_time_max": 36,
+                "fwd_time_mean": 20.8,
+                "fwd_time_std": 9.101892355133874
+        },			...
+	],
+        "publish totals": {
                 "publish_success_ratio": 1,
                 "successes": 100,
                 "failures": 0,
