@@ -19,6 +19,7 @@ type SubClient struct {
 	BrokerPass string
 	SubTopic   string
 	SubQoS     byte
+        KeepAlive  int
 	Quiet      bool
 }
 
@@ -27,11 +28,15 @@ func (c *SubClient) run(res chan *SubResults, subDone chan bool, jobDone chan bo
 	runResults.ID = c.ID
 	
 	forwardLatency := []float64{}
+
+	ka, _ := time.ParseDuration(strconv.Itoa(c.KeepAlive) + "s")
+
 	opts := mqtt.NewClientOptions().
 		AddBroker(c.BrokerURL).
 		SetClientID(fmt.Sprintf("mqtt-benchmark-%v-%v", time.Now(), c.ID)).
 		SetCleanSession(true).
 		SetAutoReconnect(true).
+		SetKeepAlive(ka).
 		SetDefaultPublishHandler(func(client mqtt.Client, msg mqtt.Message) {
 		recvTime := time.Now().UnixNano()
 		payload := msg.Payload()
@@ -39,7 +44,7 @@ func (c *SubClient) run(res chan *SubResults, subDone chan bool, jobDone chan bo
 		for ; i<len(payload)-3; i++ {
 			if payload[i]=='#' && payload[i+1]=='@' && payload[i+2]=='#' {
 				sendTime,_ := strconv.ParseInt(string(payload[:i]), 10, 64)
-				forwardLatency = append(forwardLatency, float64((recvTime - sendTime)/1000000)) // in milliseconds
+				forwardLatency = append(forwardLatency, float64(recvTime - sendTime)/1000000) // in milliseconds
 				break
 			}
 		}

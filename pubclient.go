@@ -22,6 +22,7 @@ type PubClient struct {
 	MsgSize    int
 	MsgCount   int
 	PubQoS     byte
+        KeepAlive  int
 	Quiet      bool
 }
 
@@ -111,12 +112,15 @@ func (c *PubClient) pubMessages(in, out chan *Message, doneGen, donePub chan boo
 		}
 	}
 
+	ka, _ := time.ParseDuration(strconv.Itoa(c.KeepAlive) + "s")
+
 	opts := mqtt.NewClientOptions().
 		AddBroker(c.BrokerURL).
 		SetClientID(fmt.Sprintf("mqtt-benchmark-%v-%v", time.Now(), c.ID)).
 		SetCleanSession(true).
 		SetAutoReconnect(true).
 		SetOnConnectHandler(onConnected).
+		SetKeepAlive(ka).
 		SetConnectionLostHandler(func(client mqtt.Client, reason error) {
 		log.Printf("PUBLISHER %v lost connection to the broker: %v. Will reconnect...\n", c.ID, reason.Error())
 	})

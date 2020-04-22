@@ -84,17 +84,18 @@ type JSONResults struct {
 func main() {
 
 	var (
-		broker   = flag.String("broker", "tcp://localhost:1883", "MQTT broker endpoint as scheme://host:port")
-		topic    = flag.String("topic", "/test", "MQTT topic for outgoing messages")
-		username = flag.String("username", "", "MQTT username (empty if auth disabled)")
-		password = flag.String("password", "", "MQTT password (empty if auth disabled)")
+		broker      = flag.String("broker", "tcp://localhost:1883", "MQTT broker endpoint as scheme://host:port")
+		topic       = flag.String("topic", "/test", "MQTT topic for outgoing messages")
+		username    = flag.String("username", "", "MQTT username (empty if auth disabled)")
+		password    = flag.String("password", "", "MQTT password (empty if auth disabled)")
 		pubqos      = flag.Int("pubqos", 1, "QoS for published messages")
 		subqos      = flag.Int("subqos", 1, "QoS for subscribed messages")
-		size     = flag.Int("size", 100, "Size of the messages payload (bytes)")
-		count    = flag.Int("count", 100, "Number of messages to send per pubclient")
-		clients  = flag.Int("clients", 10, "Number of clients pair to start")
-		format   = flag.String("format", "text", "Output format: text|json")
-		quiet    = flag.Bool("quiet", false, "Suppress logs while running")
+		size        = flag.Int("size", 100, "Size of the messages payload (bytes)")
+		count       = flag.Int("count", 100, "Number of messages to send per pubclient")
+		clients     = flag.Int("clients", 10, "Number of clients pair to start")
+                keepalive   = flag.Int("keepalive", 60, "Keep alive period in seconds")
+		format      = flag.String("format", "text", "Output format: text|json")
+		quiet       = flag.Bool("quiet", false, "Suppress logs while running")
 	)
 
 	flag.Parse()
@@ -121,6 +122,7 @@ func main() {
 			BrokerPass: *password,
 			SubTopic:   *topic + "-" + strconv.Itoa(i),
 			SubQoS:     byte(*subqos),
+			KeepAlive:  *keepalive,
 			Quiet:      *quiet,
 		}
 		go sub.run(subResCh, subDone, jobDone)
@@ -156,6 +158,7 @@ func main() {
 			MsgSize:    *size,
 			MsgCount:   *count,
 			PubQoS:     byte(*pubqos),
+                        KeepAlive:  *keepalive,
 			Quiet:      *quiet,
 		}
 		go c.run(pubResCh)
