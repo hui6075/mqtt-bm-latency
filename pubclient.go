@@ -1,29 +1,29 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
-	"time"
-	"bytes"
 	"strconv"
-)
+	"time"
 
-import (
 	"github.com/GaryBoone/GoStats/stats"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type PubClient struct {
-	ID         int
-	BrokerURL  string
-	BrokerUser string
-	BrokerPass string
-	PubTopic   string
-	MsgSize    int
-	MsgCount   int
-	PubQoS     byte
-        KeepAlive  int
-	Quiet      bool
+	ID          int
+	BrokerURL   string
+	BrokerUser  string
+	BrokerPass  string
+	PubTopic    string
+	MsgSize     int
+	MsgCount    int
+	PubQoS      byte
+	KeepAlive   int
+	Quiet       bool
+	ProtocolVer uint
 }
 
 func (c *PubClient) run(res chan *PubResults) {
@@ -72,8 +72,8 @@ func (c *PubClient) run(res chan *PubResults) {
 func (c *PubClient) genMessages(ch chan *Message, done chan bool) {
 	for i := 0; i < c.MsgCount; i++ {
 		ch <- &Message{
-			Topic:   c.PubTopic,
-			QoS:     c.PubQoS,
+			Topic: c.PubTopic,
+			QoS:   c.PubQoS,
 			//Payload: make([]byte, c.MsgSize),
 		}
 	}
@@ -121,9 +121,10 @@ func (c *PubClient) pubMessages(in, out chan *Message, doneGen, donePub chan boo
 		SetAutoReconnect(true).
 		SetOnConnectHandler(onConnected).
 		SetKeepAlive(ka).
+		SetProtocolVersion(c.ProtocolVer).
 		SetConnectionLostHandler(func(client mqtt.Client, reason error) {
-		log.Printf("PUBLISHER %v lost connection to the broker: %v. Will reconnect...\n", c.ID, reason.Error())
-	})
+			log.Printf("PUBLISHER %v lost connection to the broker: %v. Will reconnect...\n", c.ID, reason.Error())
+		})
 	if c.BrokerUser != "" && c.BrokerPass != "" {
 		opts.SetUsername(c.BrokerUser)
 		opts.SetPassword(c.BrokerPass)
