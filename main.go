@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
-	"strconv"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/GaryBoone/GoStats/stats"
@@ -24,25 +24,25 @@ type Message struct {
 
 // SubResults describes results of a single SUBSCRIBER / run
 type SubResults struct {
-	ID               int     `json:"id"`
-	Published        int64   `json:"actual_published"`
-	Received         int64   `json:"received"`
-	FwdRatio         float64 `json:"fwd_success_ratio"`
-	FwdLatencyMin    float64 `json:"fwd_time_min"`
-	FwdLatencyMax    float64 `json:"fwd_time_max"`
-	FwdLatencyMean   float64 `json:"fwd_time_mean"`
-	FwdLatencyStd    float64 `json:"fwd_time_std"`
+	ID             int     `json:"id"`
+	Published      int64   `json:"actual_published"`
+	Received       int64   `json:"received"`
+	FwdRatio       float64 `json:"fwd_success_ratio"`
+	FwdLatencyMin  float64 `json:"fwd_time_min"`
+	FwdLatencyMax  float64 `json:"fwd_time_max"`
+	FwdLatencyMean float64 `json:"fwd_time_mean"`
+	FwdLatencyStd  float64 `json:"fwd_time_std"`
 }
 
 // TotalSubResults describes results of all SUBSCRIBER / runs
 type TotalSubResults struct {
-	TotalFwdRatio           float64 `json:"fwd_success_ratio"`
-	TotalReceived      int64   `json:"successes"`
-	TotalPublished     int64   `json:"actual_total_published"`
-	FwdLatencyMin      float64 `json:"fwd_latency_min"`
-	FwdLatencyMax      float64 `json:"fwd_latency_max"`
-	FwdLatencyMeanAvg  float64 `json:"fwd_latency_mean_avg"`
-	FwdLatencyMeanStd  float64 `json:"fwd_latency_mean_std"`
+	TotalFwdRatio     float64 `json:"fwd_success_ratio"`
+	TotalReceived     int64   `json:"successes"`
+	TotalPublished    int64   `json:"actual_total_published"`
+	FwdLatencyMin     float64 `json:"fwd_latency_min"`
+	FwdLatencyMax     float64 `json:"fwd_latency_max"`
+	FwdLatencyMeanAvg float64 `json:"fwd_latency_mean_avg"`
+	FwdLatencyMeanStd float64 `json:"fwd_latency_mean_std"`
 }
 
 // PubResults describes results of a single PUBLISHER / run
@@ -75,8 +75,8 @@ type TotalPubResults struct {
 
 // JSONResults are used to export results as a JSON document
 type JSONResults struct {
-	PubRuns   []*PubResults `json:"publish runs"`
-	SubRuns   []*SubResults `json:"subscribe runs"`
+	PubRuns   []*PubResults    `json:"publish runs"`
+	SubRuns   []*SubResults    `json:"subscribe runs"`
 	PubTotals *TotalPubResults `json:"publish totals"`
 	SubTotals *TotalSubResults `json:"receive totals"`
 }
@@ -90,12 +90,13 @@ func main() {
 		password    = flag.String("password", "", "MQTT password (empty if auth disabled)")
 		pubqos      = flag.Int("pubqos", 1, "QoS for published messages")
 		subqos      = flag.Int("subqos", 1, "QoS for subscribed messages")
-		size        = flag.Int("size", 100, "Size of the messages payload (bytes)")
+		size        = flag.Int("size", 100, "Size of the messages payload in bytes")
 		count       = flag.Int("count", 100, "Number of messages to send per pubclient")
 		clients     = flag.Int("clients", 10, "Number of clients pair to start")
-                keepalive   = flag.Int("keepalive", 60, "Keep alive period in seconds")
+		keepalive   = flag.Int("keepalive", 60, "Keep alive period in seconds")
 		format      = flag.String("format", "text", "Output format: text|json")
-		quiet       = flag.Bool("quiet", false, "Suppress logs while running")
+		quiet       = flag.Bool("quiet", false, "Suppress logs while running (default false)")
+		protocolver = flag.Uint("protocolver", 3, "MQTT protocol version: 3 means 3.1, 4 means 3.1.1")
 	)
 
 	flag.Parse()
@@ -113,27 +114,28 @@ func main() {
 	if !*quiet {
 		log.Printf("Starting subscribe..\n")
 	}
-	
+
 	for i := 0; i < *clients; i++ {
 		sub := &SubClient{
-			ID:         i,
-			BrokerURL:  *broker,
-			BrokerUser: *username,
-			BrokerPass: *password,
-			SubTopic:   *topic + "-" + strconv.Itoa(i),
-			SubQoS:     byte(*subqos),
-			KeepAlive:  *keepalive,
-			Quiet:      *quiet,
+			ID:          i,
+			BrokerURL:   *broker,
+			BrokerUser:  *username,
+			BrokerPass:  *password,
+			SubTopic:    *topic + "-" + strconv.Itoa(i),
+			SubQoS:      byte(*subqos),
+			KeepAlive:   *keepalive,
+			Quiet:       *quiet,
+			ProtocolVer: *protocolver,
 		}
 		go sub.run(subResCh, subDone, jobDone)
 	}
 
-	SUBJOBDONE:
+SUBJOBDONE:
 	for {
 		select {
 		case <-subDone:
 			subCnt++
-			if subCnt==*clients {
+			if subCnt == *clients {
 				if !*quiet {
 					log.Printf("all subscribe job done.\n")
 				}
@@ -150,16 +152,17 @@ func main() {
 	start := time.Now()
 	for i := 0; i < *clients; i++ {
 		c := &PubClient{
-			ID:         i,
-			BrokerURL:  *broker,
-			BrokerUser: *username,
-			BrokerPass: *password,
-			PubTopic:   *topic + "-" + strconv.Itoa(i),
-			MsgSize:    *size,
-			MsgCount:   *count,
-			PubQoS:     byte(*pubqos),
-                        KeepAlive:  *keepalive,
-			Quiet:      *quiet,
+			ID:          i,
+			BrokerURL:   *broker,
+			BrokerUser:  *username,
+			BrokerPass:  *password,
+			PubTopic:    *topic + "-" + strconv.Itoa(i),
+			MsgSize:     *size,
+			MsgCount:    *count,
+			PubQoS:      byte(*pubqos),
+			KeepAlive:   *keepalive,
+			Quiet:       *quiet,
+			ProtocolVer: *protocolver,
 		}
 		go c.run(pubResCh)
 	}
@@ -172,8 +175,8 @@ func main() {
 	totalTime := time.Now().Sub(start)
 	pubtotals := calculatePublishResults(pubresults, totalTime)
 
-	for i:=0; i<3; i++ {
-		time.Sleep(1*time.Second)
+	for i := 0; i < 3; i++ {
+		time.Sleep(1 * time.Second)
 		if !*quiet {
 			log.Printf("Benchmark will stop after %v seconds.\n", 3-i)
 		}
@@ -191,7 +194,7 @@ func main() {
 	}
 
 	// collect the sub results
-	subtotals := calculateSubscribeResults(subresults,pubresults)
+	subtotals := calculateSubscribeResults(subresults, pubresults)
 
 	// print stats
 	printResults(pubresults, pubtotals, subresults, subtotals, *format)

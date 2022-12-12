@@ -27,36 +27,33 @@ All dependencies are vendored with [manul](https://github.com/kovetskiy/manul).
 
 The tool supports multiple concurrent clients, configurable message size, etc:
 ```
-> mqtt-bm-latency --help
-Usage of ./mqtt-bm-latency:
+Usage of mqtt-bm-latency:
   -broker string
-        MQTT broker endpoint as scheme://host:port (default "tcp://localhost:1883")
-  -topic string
-        MQTT topic for outgoing messages (default "/test")
-  -username string
-        MQTT username (empty if auth disabled)
-  -password string
-        MQTT password (empty if auth disabled)
-  -pubqos int
-        QoS for published messages (default 1)
-  -subqos int
-        QoS for subscribed messages (default 1)
-  -size int
-        Size of the messages payload (bytes) (default 100)
+    	MQTT broker endpoint as scheme://host:port (default "tcp://localhost:1883")
   -clients int
-        Number of clients pair to start (default 10)
+    	Number of clients pair to start (default 10)
   -count int
-        Number of messages to send per pubclient (default 100)
-  -keepalive int
-        Keep alive period in seconds (default 60)
+    	Number of messages to send per pubclient (default 100)
   -format string
-        Benchmark results output format: text|json (default "text")
+    	Output format: text|json (default "text")
+  -keepalive int
+    	Keep alive period in seconds (default 60)
+  -password string
+    	MQTT password (empty if auth disabled)
+  -protocolver uint
+    	MQTT protocol version: 3 means 3.1, 4 means 3.1.1 (default 3)
+  -pubqos int
+    	QoS for published messages (default 1)
   -quiet
-        Suppress logs while running
-
-
-
-
+    	Suppress logs while running (default false)
+  -size int
+    	Size of the messages payload in bytes (default 100)
+  -subqos int
+    	QoS for subscribed messages (default 1)
+  -topic string
+    	MQTT topic for outgoing messages (default "/test")
+  -username string
+    	MQTT username (empty if auth disabled)
 ```
 
 Two output formats supported: human-readable plain text and JSON.
